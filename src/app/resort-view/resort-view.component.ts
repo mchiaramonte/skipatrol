@@ -9,7 +9,13 @@ import { ResortData } from '../resort-data';
 export class ResortViewComponent implements OnInit {
   @Input() data : ResortData = {
     name: "Resort Name Missing",
-    peakTemp: 0,
+    summitTemp: 0,
+    baseTemp: 0,
+    openTrails: 0,
+    totalTrails: 0,
+    lastTwentyFour: 0,
+    nextTwentyFour: 0,
+    windspeed: 0,
     logo: ""
   }
   constructor() { }
