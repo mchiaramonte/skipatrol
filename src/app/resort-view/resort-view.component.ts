@@ -16,6 +16,8 @@ export class ResortViewComponent implements OnInit {
     lastTwentyFour: 0,
     nextTwentyFour: 0,
     windspeed: 0,
+    low: 0,
+    high: 0,
     logo: ""
   }
   constructor() { }

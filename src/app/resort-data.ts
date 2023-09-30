@@ -8,4 +8,6 @@ export class ResortData {
     lastTwentyFour: number = 0;
     nextTwentyFour: number = 0;
     windspeed: number = 0;
+    low : number = 0;
+    high : number = 0;
 }
