@@ -4,6 +4,8 @@ export class ResortData {
     baseTemp : number = 0;
     openTrails : number = 0;
     totalTrails : number = 0;
+    openLifts : number = 0;
+    totalLifts : number = 0;
     logo: string = "";
     lastTwentyFour: number = 0;
     nextTwentyFour: number = 0;

@@ -60,6 +60,23 @@ https.get("https://api.killington.com/api/v1/dor/sensors", (kres) => {
 
 });
 
+https.get("https://api.killington.com/api/v1/dor/conditions", (kres) => {
+    let data = '';
+
+    kres.on('data', (chunk) => {
+        data += chunk;
+    });
+
+    kres.on('end', () => {
+        let conditions = JSON.parse(data);
+        killington.openTrails = conditions.trailReport.open;
+        killington.totalTrails = conditions.trailReport.total;
+        killington.openLifts = conditions.liftReport.open;
+        killington.totalLifts = conditions.liftReport.total;
+    });
+
+});
+
 
 app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
 app.get('/api/weather', (req, res) => {

@@ -13,6 +13,8 @@ export class ResortViewComponent implements OnInit {
     baseTemp: 0,
     openTrails: 0,
     totalTrails: 0,
+    openLifts: 0,
+    totalLifts: 0,
     lastTwentyFour: 0,
     nextTwentyFour: 0,
     windspeed: 0,

@@ -5,10 +5,11 @@
         <mat-card-header>
         </mat-card-header>
         <mat-card-content style="font-size: 1.2em; line-height: 2em;">
-            <div>Temperature: H{{data.low}}&deg;F / L{{data.high}}&deg;F</div>
+            <div>Temperature: H{{data.high}}&deg;F / L{{data.low}}&deg;F</div>
             
             <div>Summit {{data.summitTemp}}&deg;F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Base {{data.baseTemp}}&deg;F</div>
-            <div>Trails Open: {{data.openTrails}}/{{data.totalTrails}}</div>
+            <div>Trails Open: {{data.openTrails}} of {{data.totalTrails}}</div>
+            <div>Lifts Open: {{data.openLifts}} of {{data.totalLifts}}</div>
             <div>Snow in Last 24 hrs: {{data.lastTwentyFour}}"</div>
             <div>Snow in Next 24 hrs: {{data.nextTwentyFour}}"</div>
             <div>Wind: {{data.windspeed}}MPH</div>
