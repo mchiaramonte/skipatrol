@@ -8,4 +8,4 @@ The code is pushed to the pi via a docker image that gets built manually right n
 
 In order for this to run properly on a Raspberry Pi, be sure to build it with the correct platform settings
 
-```docker buildx build --platform linux/amd64,linux/arm/v8 -t clearvus/ski-patrol .```
+```docker buildx build --platform linux/amd64,linux/arm/v8 -t clearvus/ski-patrol . --push```
