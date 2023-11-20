@@ -109,5 +109,7 @@
       }
     }
   },
-  "defaultProject": "SkiPatrol"
+  "cli": {
+    "analytics": "7dfa8fb9-fbe7-4ac8-bb03-557e8b0ed8cb"
+  }
 }
