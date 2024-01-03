@@ -139,3 +139,5 @@ const server = http.createServer(app);
 server.listen(port, () => console.log(`App running on: http://localhost:${port}`));
 
 refreshData();
+
+setInterval(refreshData, 900000);
