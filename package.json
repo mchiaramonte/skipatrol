@@ -20,9 +20,11 @@
     "@angular/platform-browser": "~17.0.3",
     "@angular/platform-browser-dynamic": "~17.0.3",
     "@angular/router": "~17.0.3",
+    "axios": "^1.6.0",
     "cheerio": "^1.0.0-rc.12",
     "rxjs": "~7.8.1",
     "tslib": "^2.6.2",
+    "vite": "^4.5.1",
     "zone.js": "~0.14.2"
   },
   "devDependencies": {
