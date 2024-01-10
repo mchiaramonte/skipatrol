@@ -11,6 +11,7 @@ export class HomeComponent implements OnInit {
 
   loading: boolean = true;
   resorts: ResortData[] = [];
+  lastUpdated : Date = new Date();
   
   constructor(private weather  :WeatherService, private changeRef : ChangeDetectorRef) { }
 
@@ -18,23 +19,22 @@ export class HomeComponent implements OnInit {
     return item.name;
   }
 
+  private updateData(data : any) {
+    this.resorts = data.weather;
+    this.loading = false;
+    this.changeRef.markForCheck();
+    this.lastUpdated = new Date(data.lastUpdated);
+}
+
   ngOnInit(): void {
     setTimeout(() => {
-      this.weather.getWeather().subscribe(data => {
-        this.resorts = data;
-        this.loading = false;
-        this.changeRef.markForCheck();
-      });
+      this.weather.getWeather().subscribe(data => this.updateData(data));
         
     }, 2000);
 
     setInterval(() => {
-      this.weather.getWeather().subscribe(data => {
-        this.resorts = data;
-        this.loading = false;
-        this.changeRef.markForCheck();
-      });
+      this.weather.getWeather().subscribe(data => this.updateData(data));
     }, 3600000);
-  }
+    }
 
 }

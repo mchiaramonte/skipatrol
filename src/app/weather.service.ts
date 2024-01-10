@@ -10,6 +10,6 @@ export class WeatherService {
   constructor(private https : HttpClient) { }
 
   getWeather() {
-    return this.https.get<ResortData []>("/api/weather");
+    return this.https.get<ResortData []>("http://localhost:3001/api/weather");
   }
 }

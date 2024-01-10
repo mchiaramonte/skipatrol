@@ -4,15 +4,22 @@ const http = require('http');
 const path = require('path');
 const { kill } = require('process');
 const cheerio = require('cheerio');
+const cors = require('cors')
 
 const app = express();
 
 const port = process.env.PORT || 3001;
 
+var corsOptions = {
+    origin: ['http://localhost:4200', 'http://localhost:3001']
+  };
+
 app.use(express.static(__dirname + '/dist/ski-patrol'));
+app.use(cors(corsOptions));
 console.log(__dirname);
 
 let logos = [];
+let lastUpdate = new Date();
 logos["killington"] = "assets/killington.svg";
 logos["sugarbush"] = "assets/sugarbush.png"
 logos["madriverglen"] = "assets/madriverglen.png"
@@ -73,6 +80,7 @@ function processData(request, callback, rawData) {
 }
 
 function refreshData() {
+    lastUpdate = new Date();
     https.get("https://api.killington.com/api/v1/dor/weather", r => processData(r, (weather) => {
         killington.low = Math.round(weather.daily[0].temp.min);
         killington.high = Math.round(weather.daily[0].temp.max);
@@ -131,7 +139,7 @@ function refreshData() {
 
 app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
 app.get('/api/weather', (req, res) => {
-    res.send([killington, sugarbush, madriverglen]);
+    res.send({lastUpdated: lastUpdate, weather: [killington, sugarbush, madriverglen]});
 });
 
 const server = http.createServer(app);
