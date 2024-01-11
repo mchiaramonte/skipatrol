@@ -11,8 +11,8 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 var corsOptions = {
-    origin: ['http://localhost:4200', 'http://localhost:3001']
-  };
+    origin: ['http://localhost:4200', 'http://localhost', 'http://localhost:3001']
+};
 
 app.use(express.static(__dirname + '/dist/ski-patrol'));
 app.use(cors(corsOptions));
@@ -139,7 +139,7 @@ function refreshData() {
 
 app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
 app.get('/api/weather', (req, res) => {
-    res.send({lastUpdated: lastUpdate, weather: [killington, sugarbush, madriverglen]});
+    res.send({ lastUpdated: lastUpdate, weather: [killington, sugarbush, madriverglen] });
 });
 
 const server = http.createServer(app);
