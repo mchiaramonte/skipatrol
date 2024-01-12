@@ -34,7 +34,10 @@ let killington = {
     nextTwentyFour: 0,
     windspeed: 0,
     low: 0,
-    high: 0
+    high: 0,
+    flags: {
+        showWind : true,
+    }
 };
 
 let madriverglen = {
@@ -47,7 +50,10 @@ let madriverglen = {
     nextTwentyFour: 0,
     windspeed: 0,
     low: 0,
-    high: 0
+    high: 0,
+    flags: {
+        showWind : true,
+    }
 };
 
 let sugarbush = {
@@ -60,7 +66,10 @@ let sugarbush = {
     nextTwentyFour: 0,
     windspeed: 0,
     low: 0,
-    high: 0
+    high: 0,
+    flags: {
+        showWind : false,
+    }
 };
 
 function processData(request, callback, rawData) {
@@ -81,27 +90,28 @@ function processData(request, callback, rawData) {
 
 function refreshData() {
     lastUpdate = new Date();
-    https.get("https://api.killington.com/api/v1/dor/weather", r => processData(r, (weather) => {
-        killington.low = Math.round(weather.daily[0].temp.min);
-        killington.high = Math.round(weather.daily[0].temp.max);
-        killington.windspeed = Math.round(weather.current.wind_speed);
-        killington.currentTemp = Math.round(weather.current.temp);
-        killington.feelsLike = Math.round(weather.current.feels_like);
-    }));
 
-    https.get("https://v4.mtnfeed.com/resorts/sugarbush.json", r => processData(r, (requiredInfo) => {
-        https.get(`https://mtnpowder.com/feed/v3.json?bearer_token=${requiredInfo.bearerToken}&resortId%5B%5D=70`, j => processData(j, (sbdata) => {
-            sugarbush.currentTemp = sbdata.Resorts[0].CurrentConditions.Base.TemperatureF
-            sugarbush.high = sbdata.Resorts[0].CurrentConditions.Base.TemperatureHighF;
-            sugarbush.low = sbdata.Resorts[0].CurrentConditions.Base.TemperatureLowF
-            sugarbush.totalLifts = sbdata.Resorts[0].SnowReport.TotalLifts;
-            sugarbush.openLifts = sbdata.Resorts[0].SnowReport.TotalOpenLifts;
-            sugarbush.totalTrails = sbdata.Resorts[0].SnowReport.TotalTrails;
-            sugarbush.openTrails = sbdata.Resorts[0].SnowReport.TotalOpenLifts;
+    updateKillington();
+    updateSugarbush();
+    updateMadRiverGlen();
 
-        }))
-    }));
+}
 
+
+app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
+app.get('/api/weather', (req, res) => {
+    res.send({ lastUpdated: lastUpdate, weather: [killington, sugarbush, madriverglen] });
+});
+
+const server = http.createServer(app);
+
+server.listen(port, () => console.log(`App running on: http://localhost:${port}`));
+
+refreshData();
+
+setInterval(refreshData, 900000);
+
+function updateMadRiverGlen() {
     https.get("https://lightning.ambientweather.net/devices?public.slug=701991bf51eed258385b8d3e2c86f2d6", r => processData(r, wdata => {
         const lastData = wdata.data[0].lastData;
         madriverglen.currentTemp = Math.round(lastData.tempf);
@@ -119,12 +129,43 @@ function refreshData() {
             const parts = text.split(": ");
             if (parts[0] === "Lifts Open Today") {
                 madriverglen.openLifts = parseInt(parts[1]);
+            } else if (parts[0] === "Trails Open Today") {
+                madriverglen.openTrails = parseInt(parts[1]);
+            } else if (parts[0] === "New Snow") {
+                range = parts[1].trim().split(" - ");
+                if (range.length > 1) {
+                    madriverglen.nextTwentyFour = parseInt(range[1]);
+                }
+                else {
+                    madriverglen.nextTwentyFour = parseInt(range[0]);
+                }
+                
             }
+
             madriverglen.totalLifts = 4;
             madriverglen.totalTrails = 60;
         });
     }, true));
+}
 
+function updateSugarbush() {
+    https.get("https://v4.mtnfeed.com/resorts/sugarbush.json", r => processData(r, (requiredInfo) => {
+        https.get(`https://mtnpowder.com/feed/v3.json?bearer_token=${requiredInfo.bearerToken}&resortId%5B%5D=70`, j => processData(j, (sbdata) => {
+            sugarbush.currentTemp = sbdata.Resorts[0].CurrentConditions.Base.TemperatureF;
+            sugarbush.high = sbdata.Resorts[0].CurrentConditions.Base.TemperatureHighF;
+            sugarbush.low = sbdata.Resorts[0].CurrentConditions.Base.TemperatureLowF;
+            sugarbush.totalLifts = sbdata.Resorts[0].SnowReport.TotalLifts;
+            sugarbush.openLifts = sbdata.Resorts[0].SnowReport.TotalOpenLifts;
+            sugarbush.totalTrails = sbdata.Resorts[0].SnowReport.TotalTrails;
+            sugarbush.openTrails = sbdata.Resorts[0].SnowReport.TotalOpenLifts;
+            sugarbush.nextTwentyFour = sbdata.Resorts[0].SnowReport.BaseArea.Last24HoursIn;
+            sugarbush.windspeed = parseInt(sbdata.Resorts[0].Forecasts[0].OneDay.avewind.mph);
+            sugarbush.flags.showWind = true;
+        }));
+    }));
+}
+
+function updateKillington() {
     https.get("https://api.killington.com/api/v1/dor/conditions", r => processData(r, conditions => {
         killington.openTrails = conditions.trailReport.open;
         killington.totalTrails = conditions.trailReport.total;
@@ -134,18 +175,11 @@ function refreshData() {
     }));
 
 
+    https.get("https://api.killington.com/api/v1/dor/weather", r => processData(r, (weather) => {
+        killington.low = Math.round(weather.daily[0].temp.min);
+        killington.high = Math.round(weather.daily[0].temp.max);
+        killington.windspeed = Math.round(weather.current.wind_speed);
+        killington.currentTemp = Math.round(weather.current.temp);
+        killington.feelsLike = Math.round(weather.current.feels_like);
+    }));
 }
-
-
-app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
-app.get('/api/weather', (req, res) => {
-    res.send({ lastUpdated: lastUpdate, weather: [killington, sugarbush, madriverglen] });
-});
-
-const server = http.createServer(app);
-
-server.listen(port, () => console.log(`App running on: http://localhost:${port}`));
-
-refreshData();
-
-setInterval(refreshData, 900000);

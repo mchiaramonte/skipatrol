@@ -1,3 +1,5 @@
+import { Flags } from "./flags";
+
 export class ResortData {
     name : string = "";
     currentTemp : number = 0;
@@ -11,4 +13,7 @@ export class ResortData {
     feelsLike : number = 0;
     low : number = 0;
     high : number = 0;
+    flags: Flags = {
+        showWind: true
+    };
 }

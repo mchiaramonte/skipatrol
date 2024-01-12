@@ -19,7 +19,10 @@ export class ResortViewComponent implements OnInit {
     windspeed: 0,
     low: 0,
     high: 0,
-    logo: ""
+    logo: "",
+    flags: {
+      showWind: false
+    }
   }
   constructor() { }
 
