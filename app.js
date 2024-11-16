@@ -8,10 +8,10 @@ const cors = require('cors')
 
 const app = express();
 
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 4001;
 
 var corsOptions = {
-    origin: ['http://localhost:4200', 'http://localhost', 'http://localhost:3001', 'http://localhost:4002']
+    origin: ['http://localhost:4200', 'http://localhost', 'http://localhost:3001', 'http://localhost:4002','http://localhost:4001']
 };
 
 app.use(express.static(__dirname + '/dist/ski-patrol'));
