@@ -14,6 +14,7 @@ export class ResortData {
     low : number = 0;
     high : number = 0;
     flags: Flags = {
-        showWind: true
+        showWind: true,
+        showFeelsLike: true
     };
 }

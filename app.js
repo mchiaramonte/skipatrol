@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 var corsOptions = {
-    origin: ['http://localhost:4200', 'http://localhost', 'http://localhost:3001']
+    origin: ['http://localhost:4200', 'http://localhost', 'http://localhost:3001', 'http://localhost:4002']
 };
 
 app.use(express.static(__dirname + '/dist/ski-patrol'));
@@ -37,6 +37,7 @@ let killington = {
     high: 0,
     flags: {
         showWind : true,
+        showFeelsLike: true
     }
 };
 
@@ -52,7 +53,8 @@ let madriverglen = {
     low: 0,
     high: 0,
     flags: {
-        showWind : true,
+        showFeelsLike: true,
+        showWind : true
     }
 };
 
@@ -68,7 +70,8 @@ let sugarbush = {
     low: 0,
     high: 0,
     flags: {
-        showWind : false,
+        showFeelsLike: false,
+        showWind: false,
     }
 };
 
@@ -98,9 +101,13 @@ function refreshData() {
 }
 
 
-app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
+// app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
 app.get('/api/weather', (req, res) => {
     res.send({ lastUpdated: lastUpdate, weather: [killington, sugarbush, madriverglen] });
+});
+
+app.get('/api/health', (req, res) => {
+    res.send("OK");
 });
 
 const server = http.createServer(app);
@@ -160,20 +167,27 @@ function updateSugarbush() {
             sugarbush.openTrails = sbdata.Resorts[0].SnowReport.TotalOpenLifts;
             sugarbush.nextTwentyFour = sbdata.Resorts[0].SnowReport.BaseArea.Last24HoursIn;
             sugarbush.windspeed = parseInt(sbdata.Resorts[0].Forecasts[0].OneDay.avewind.mph);
-            sugarbush.flags.showWind = true;
         }));
     }));
 }
 
 function updateKillington() {
-    https.get("https://api.killington.com/api/v1/dor/conditions", r => processData(r, conditions => {
-        killington.openTrails = conditions.trailReport.open;
-        killington.totalTrails = conditions.trailReport.total;
-        killington.openLifts = conditions.liftReport.open;
-        killington.totalLifts = conditions.liftReport.total;
-        killington.nextTwentyFour = conditions.snowReport[0].items.filter(si => si.duration === "24 Hours")[0].amount;
+
+    https.get("https://api.killington.com/api/v1/dor/drupal/lifts", r => processData(r, lifts => {
+       killington.totalLifts = lifts.length;
+       killington.openLifts = lifts.filter(l => l.status === "open").length;
     }));
 
+    https.get("https://api.killington.com/api/v1/dor/drupal/trails", r => processData(r, trails => {
+        const ftrails = trails.filter(t => t.type === "alpine_trail");
+        killington.totalTrails = ftrails.length;
+        killington.openTrails = ftrails.filter(t => t.status === "open").length;
+     }));
+ 
+
+    https.get("https://api.killington.com/api/v1/dor/drupal/snow-reports?sort=date&direction=desc&limit=1", r => processData(r, conditions => {
+        killington.nextTwentyFour = conditions[0].computed["24_hour"];
+    }));
 
     https.get("https://api.killington.com/api/v1/dor/weather", r => processData(r, (weather) => {
         killington.low = Math.round(weather.daily[0].temp.min);

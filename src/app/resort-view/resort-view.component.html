@@ -6,7 +6,7 @@
         </mat-card-header>
         <mat-card-content style="font-size: 1.2em; line-height: 2em;">
             <div>Temperature: H{{data.high}}&deg;F / L{{data.low}}&deg;F</div>
-            <div>Current {{data.currentTemp}}&deg;F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Feels Like {{data.feelsLike}}&deg;F</div>
+            <div>Current: {{data.currentTemp}}&deg;F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@if (data.flags.showFeelsLike) {Feels Like: {{data.feelsLike}}&deg;F}</div>
             <div *ngIf="data.flags.showWind">Wind: {{data.windspeed}}MPH</div>
             <div>Trails: {{data.openTrails}} of {{data.totalTrails}}</div>
             <div>Lifts: {{data.openLifts}} of {{data.totalLifts}}</div>

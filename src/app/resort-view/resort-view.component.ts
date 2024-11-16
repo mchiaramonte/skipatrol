@@ -21,7 +21,8 @@ export class ResortViewComponent implements OnInit {
     high: 0,
     logo: "",
     flags: {
-      showWind: false
+      showWind: false,
+      showFeelsLike: false
     }
   }
   constructor() { }
