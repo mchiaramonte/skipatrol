@@ -1,10 +1,13 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ResortData } from '../resort-data';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-resort-view',
+  imports: [MatCardModule, MatIconModule],
   templateUrl: './resort-view.component.html',
-  styleUrls: ['./resort-view.component.scss']
+  styleUrls: ['./resort-view.component.css']
 })
 export class ResortViewComponent implements OnInit {
   @Input() data : ResortData = {

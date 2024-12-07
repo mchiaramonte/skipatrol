@@ -1,11 +1,13 @@
 <div style="height: 100%">
-<div style="display: flex; flex-wrap: wrap; justify-content: space-around; width:97%; padding-left: 15px; height:95%">
-    <div *ngFor="let resort of resorts ; trackBy: trackItem"
-        style="padding-left:0px; padding-right: 0px; width: 280px; padding-top: 1%">
-        <app-resort-view [data]="resort"></app-resort-view>
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-around; width:97%; padding-left: 15px; height:95%">
+        @for (resort of resorts; track trackItem) {
+            <div
+            style="padding-left:0px; padding-right: 0px; width: 280px; padding-top: 1%">
+            <app-resort-view [data]="resort"></app-resort-view>
+            </div>
+        }
     </div>
-</div>
-<div style="justify-content: left;padding-left: 15px;">
-    Last Updated: {{lastUpdated.toLocaleString()}}
-</div>
-</div>
+    <div style="justify-content: left;padding-left: 15px;">
+        Last Updated: {{lastUpdated.toLocaleString()}}
+    </div>
+    </div>

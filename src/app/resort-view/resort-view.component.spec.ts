@@ -8,12 +8,10 @@ describe('ResortViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ResortViewComponent ]
+      imports: [ResortViewComponent]
     })
     .compileComponents();
-  });
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(ResortViewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

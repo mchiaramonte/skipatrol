@@ -14,7 +14,8 @@ var corsOptions = {
     origin: ['http://localhost:4200', 'http://localhost', 'http://localhost:3001', 'http://localhost:4002','http://localhost:4001']
 };
 
-app.use(express.static(__dirname + '/dist/ski-patrol'));
+app.use(express.static(__dirname + '/dist/ski-patrol/browser'));
+app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
 app.use(cors(corsOptions));
 console.log(__dirname);
 
@@ -119,7 +120,7 @@ refreshData();
 setInterval(refreshData, 900000);
 
 function updateMadRiverGlen() {
-    https.get("https://lightning.ambientweather.net/devices?public.slug=701991bf51eed258385b8d3e2c86f2d6", r => processData(r, wdata => {
+    https.get("https://lightning.ambientweather.net/devices?public.slug=fbd46773876e89bfdad0c25c7e1352c2", r => processData(r, wdata => {
         const lastData = wdata.data[0].lastData;
         madriverglen.currentTemp = Math.round(lastData.tempf);
         madriverglen.windspeed = Math.round(lastData.windspeedmph);
@@ -189,11 +190,11 @@ function updateKillington() {
         killington.nextTwentyFour = conditions[0].computed["24_hour"];
     }));
 
-    https.get("https://api.killington.com/api/v1/dor/weather", r => processData(r, (weather) => {
-        killington.low = Math.round(weather.daily[0].temp.min);
-        killington.high = Math.round(weather.daily[0].temp.max);
-        killington.windspeed = Math.round(weather.current.wind_speed);
-        killington.currentTemp = Math.round(weather.current.temp);
-        killington.feelsLike = Math.round(weather.current.feels_like);
+    https.get("https://api.killington.com/api/v1/dor/weather-forecast", r => processData(r, (weather) => {
+        killington.low = Math.round(weather.forecast[0].temperature_low);
+        killington.high = Math.round(weather.forecast[0].temperature_high);
+        killington.windspeed = Math.round(weather.forecast[0].wind_speed.split("-")[0]);
+        killington.currentTemp = Math.round(weather.current.temperature);
+        killington.feelsLike = Math.round(weather.current.temperature);
     }));
 }

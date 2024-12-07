@@ -1,15 +1,18 @@
-    <mat-card style="width: 100%; height: 316px;">
-        <div style="display: flex; justify-content: center; align-items: center; align-content: center; width: 100%; min-height: 75px; flex-direction: row;">
-            <img style="width:75px; max-width: 75px;"  src="{{data.logo}}">
-        </div>
-        <mat-card-header>
-        </mat-card-header>
-        <mat-card-content style="font-size: 1.2em; line-height: 2em;">
-            <div>Temperature: H{{data.high}}&deg;F / L{{data.low}}&deg;F</div>
-            <div>Current: {{data.currentTemp}}&deg;F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@if (data.flags.showFeelsLike) {Feels Like: {{data.feelsLike}}&deg;F}</div>
-            <div *ngIf="data.flags.showWind">Wind: {{data.windspeed}}MPH</div>
-            <div>Trails: {{data.openTrails}} of {{data.totalTrails}}</div>
-            <div>Lifts: {{data.openLifts}} of {{data.totalLifts}}</div>
-            <div><mat-icon aria-hidden="false" aria-label="snowing" fontIcon="snowing"></mat-icon> Next 24 hrs: {{data.nextTwentyFour}}"</div>
-        </mat-card-content>
-    </mat-card>
+<mat-card style="width: 100%; height: 316px;">
+    <div style="display: flex; justify-content: center; align-items: center; align-content: center; width: 100%; min-height: 75px; flex-direction: row;">
+        <img style="width:75px; max-width: 75px;"  src="{{data.logo}}">
+    </div>
+    <mat-card-header>
+    </mat-card-header>
+    <mat-card-content style="font-size: 1.2em; line-height: 1.5em;">
+        <div>Temperature: H{{data.high}}&deg;F / L{{data.low}}&deg;F</div>
+        <div>Current: {{data.currentTemp}}&deg;F</div>
+        <div>@if (data.flags.showFeelsLike) {Feels Like: {{data.feelsLike}}&deg;F}</div>
+        @if (data.flags.showWind) {
+        <div>Wind: {{data.windspeed}}MPH</div>
+        }
+        <div>Trails: {{data.openTrails}} of {{data.totalTrails}}</div>
+        <div>Lifts: {{data.openLifts}} of {{data.totalLifts}}</div>
+        <div><mat-icon aria-hidden="false" aria-label="snowing" fontIcon="snowing"></mat-icon> Next 24 hrs: {{data.nextTwentyFour}}"</div>
+    </mat-card-content>
+</mat-card>
