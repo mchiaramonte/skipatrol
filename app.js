@@ -4,7 +4,7 @@ const http = require('http');
 const path = require('path');
 const { kill } = require('process');
 const cheerio = require('cheerio');
-const cors = require('cors')
+const cors = require('cors');
 
 const app = express();
 
@@ -24,6 +24,9 @@ let lastUpdate = new Date();
 logos["killington"] = "assets/killington.svg";
 logos["sugarbush"] = "assets/sugarbush.png"
 logos["madriverglen"] = "assets/madriverglen.png"
+logos["stratton"] = "assets/stratton.png"
+const strattonResortId=1;
+const sugarbushResortId=70;
 
 let killington = {
     name: "Killington",
@@ -76,6 +79,41 @@ let sugarbush = {
     }
 };
 
+let stratton = {
+    name: "Stratton",
+    feelsLike: 0,
+    currentTemp: 0,
+    openTrails: 0,
+    totalTrails: 0,
+    logo: logos["stratton"],
+    nextTwentyFour: 0,
+    windspeed: 0,
+    low: 0,
+    high: 0,
+    flags: {
+        showFeelsLike: false,
+        showWind: false,
+    }
+};
+
+const emptyShared = {
+    name: "",
+    feelsLike: 0,
+    currentTemp: 0,
+    openTrails: 0,
+    totalTrails: 0,
+    logo: "",
+    nextTwentyFour: 0,
+    windspeed: 0,
+    low: 0,
+    high: 0,
+    flags: {
+        showFeelsLike: false,
+        showWind: false,
+    }
+};
+
+
 function processData(request, callback, rawData) {
     let data = '';
     request.on('data', (chunk) => {
@@ -96,7 +134,8 @@ function refreshData() {
     lastUpdate = new Date();
 
     updateKillington();
-    updateSugarbush();
+    updateShared('stratton', strattonResortId, result => {stratton = JSON.parse(JSON.stringify(result)); stratton.logo = logos["stratton"]})
+    updateShared('sugarbush', sugarbushResortId, result => {sugarbush = JSON.parse(JSON.stringify(result));sugarbush.logo = logos["sugarbush"]})
     updateMadRiverGlen();
 
 }
@@ -104,7 +143,7 @@ function refreshData() {
 
 // app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
 app.get('/api/weather', (req, res) => {
-    res.send({ lastUpdated: lastUpdate, weather: [killington, sugarbush, madriverglen] });
+    res.send({ lastUpdated: lastUpdate, weather: [killington, sugarbush, madriverglen, stratton] });
 });
 
 app.get('/api/health', (req, res) => {
@@ -118,6 +157,26 @@ server.listen(port, () => console.log(`App running on: http://localhost:${port}`
 refreshData();
 
 setInterval(refreshData, 900000);
+
+function updateShared(resort, resortId, handleResult) {
+    
+    https.get(`https://v4.mtnfeed.com/resorts/${resort}.json`, r => processData(r, (requiredInfo) => {
+        https.get(`https://mtnpowder.com/feed/v3.json?bearer_token=${requiredInfo.bearerToken}&resortId%5B%5D=${resortId}`, j => processData(j, (sharedData) => {
+            var resort = JSON.parse(JSON.stringify(emptyShared));
+            resort.currentTemp = sharedData.Resorts[0].CurrentConditions.Base.TemperatureF;
+            resort.high = sharedData.Resorts[0].CurrentConditions.Base.TemperatureHighF;
+            resort.low = sharedData.Resorts[0].CurrentConditions.Base.TemperatureLowF;
+            resort.totalLifts = sharedData.Resorts[0].SnowReport.TotalLifts;
+            resort.openLifts = sharedData.Resorts[0].SnowReport.TotalOpenLifts;
+            resort.totalTrails = sharedData.Resorts[0].SnowReport.TotalTrails;
+            resort.openTrails = sharedData.Resorts[0].SnowReport.TotalOpenTrails;
+            resort.nextTwentyFour = sharedData.Resorts[0].SnowReport.BaseArea.Last24HoursIn;
+            resort.windspeed = parseInt(sharedData.Resorts[0].Forecasts[0].OneDay.avewind.mph);
+            handleResult(resort);
+        }));
+    }));
+
+}
 
 function updateMadRiverGlen() {
     https.get("https://lightning.ambientweather.net/devices?public.slug=fbd46773876e89bfdad0c25c7e1352c2", r => processData(r, wdata => {
@@ -150,39 +209,23 @@ function updateMadRiverGlen() {
                 
             }
 
-            madriverglen.totalLifts = 4;
+            madriverglen.totalLifts = 5;
             madriverglen.totalTrails = 60;
         });
     }, true));
-}
-
-function updateSugarbush() {
-    https.get("https://v4.mtnfeed.com/resorts/sugarbush.json", r => processData(r, (requiredInfo) => {
-        https.get(`https://mtnpowder.com/feed/v3.json?bearer_token=${requiredInfo.bearerToken}&resortId%5B%5D=70`, j => processData(j, (sbdata) => {
-            sugarbush.currentTemp = sbdata.Resorts[0].CurrentConditions.Base.TemperatureF;
-            sugarbush.high = sbdata.Resorts[0].CurrentConditions.Base.TemperatureHighF;
-            sugarbush.low = sbdata.Resorts[0].CurrentConditions.Base.TemperatureLowF;
-            sugarbush.totalLifts = sbdata.Resorts[0].SnowReport.TotalLifts;
-            sugarbush.openLifts = sbdata.Resorts[0].SnowReport.TotalOpenLifts;
-            sugarbush.totalTrails = sbdata.Resorts[0].SnowReport.TotalTrails;
-            sugarbush.openTrails = sbdata.Resorts[0].SnowReport.TotalOpenLifts;
-            sugarbush.nextTwentyFour = sbdata.Resorts[0].SnowReport.BaseArea.Last24HoursIn;
-            sugarbush.windspeed = parseInt(sbdata.Resorts[0].Forecasts[0].OneDay.avewind.mph);
-        }));
-    }));
 }
 
 function updateKillington() {
 
     https.get("https://api.killington.com/api/v1/dor/drupal/lifts", r => processData(r, lifts => {
        killington.totalLifts = lifts.length;
-       killington.openLifts = lifts.filter(l => l.status === "open").length;
+       killington.openLifts = lifts.filter(l => l.status !== "closed").length;
     }));
 
     https.get("https://api.killington.com/api/v1/dor/drupal/trails", r => processData(r, trails => {
         const ftrails = trails.filter(t => t.type === "alpine_trail");
         killington.totalTrails = ftrails.length;
-        killington.openTrails = ftrails.filter(t => t.status === "open").length;
+        killington.openTrails = ftrails.filter(t => t.status !== "closed" && t.status !== "on_hold").length;
      }));
  
 

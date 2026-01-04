@@ -1,0 +1,19 @@
+services:
+  server:
+    image: ski-patrol-server
+    healthcheck:
+      test: ["CMD", "curl http://localhost/api/health"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    ports:
+      - 4001:3001  
+  client:
+    environment:
+      - server="server"
+    image: ski-patrol-client
+    depends_on:
+      - server
+    ports:
+      - 4002:80
