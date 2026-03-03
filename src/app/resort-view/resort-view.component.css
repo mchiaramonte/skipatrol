@@ -1,0 +1,22 @@
+.resort-card {
+  width: 100%;
+  height: 316px;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 75px;
+}
+
+.resort-logo {
+  width: 75px;
+  max-width: 75px;
+}
+
+.resort-content {
+  font-size: 1.2em;
+  line-height: 1.5em;
+}

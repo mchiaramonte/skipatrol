@@ -1,6 +1,9 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, timer } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { ResortData } from '../resort-data';
-import { WeatherService } from '../weather.service';
+import { WeatherService, WeatherResponse } from '../weather.service';
 import { ResortViewComponent } from '../resort-view/resort-view.component';
 
 @Component({
@@ -8,37 +11,36 @@ import { ResortViewComponent } from '../resort-view/resort-view.component';
   imports: [ResortViewComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
-  providers: [WeatherService]
 })
 export class HomeComponent implements OnInit {
-
-  loading: boolean = true;
+  loading = true;
+  error = false;
   resorts: ResortData[] = [];
-  lastUpdated : Date = new Date();
-  weather = inject(WeatherService);
-  
-  constructor(private changeRef : ChangeDetectorRef) { }
+  lastUpdated: Date = new Date();
 
-  trackItem(index : number, item: ResortData) {
-    return item.name;
-  }
-
-  private updateData(data : any) {
-    this.resorts = data.weather;
-    this.loading = false;
-    this.changeRef.markForCheck();
-    this.lastUpdated = new Date(data.lastUpdated);
-}
+  private weather = inject(WeatherService);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
-    setTimeout(() => {
-      this.weather.getWeather().subscribe(data => this.updateData(data));
-        
-    }, 2000);
+    timer(2000, 3600000).pipe(
+      switchMap(() =>
+        this.weather.getWeather().pipe(
+          catchError(err => {
+            console.error('Failed to fetch weather data', err);
+            this.error = true;
+            this.loading = false;
+            return EMPTY;
+          })
+        )
+      ),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(data => this.updateData(data));
+  }
 
-    setInterval(() => {
-      this.weather.getWeather().subscribe(data => this.updateData(data));
-    }, 3600000);
-    }
-
+  private updateData(data: WeatherResponse): void {
+    this.resorts = data.weather;
+    this.loading = false;
+    this.error = false;
+    this.lastUpdated = new Date(data.lastUpdated);
+  }
 }

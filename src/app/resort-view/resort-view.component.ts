@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ResortData } from '../resort-data';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,9 +9,9 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './resort-view.component.html',
   styleUrls: ['./resort-view.component.css']
 })
-export class ResortViewComponent implements OnInit {
-  @Input() data : ResortData = {
-    name: "Resort Name Missing",
+export class ResortViewComponent {
+  @Input() data: ResortData = {
+    name: 'Resort Name Missing',
     feelsLike: 0,
     currentTemp: 0,
     openTrails: 0,
@@ -22,15 +22,10 @@ export class ResortViewComponent implements OnInit {
     windspeed: 0,
     low: 0,
     high: 0,
-    logo: "",
+    logo: '',
     flags: {
       showWind: false,
       showFeelsLike: false
     }
-  }
-  constructor() { }
-
-  ngOnInit(): void {
-  }
-
+  };
 }

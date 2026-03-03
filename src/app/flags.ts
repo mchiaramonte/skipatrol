@@ -1,4 +1,4 @@
-export class Flags {
-    showWind : boolean = false;
-    showFeelsLike : boolean = false;
+export interface Flags {
+    showWind: boolean;
+    showFeelsLike: boolean;
 }

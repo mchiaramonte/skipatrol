@@ -2,7 +2,6 @@ const express = require('express');
 const https = require('https');
 const http = require('http');
 const path = require('path');
-const { kill } = require('process');
 const cheerio = require('cheerio');
 const cors = require('cors');
 
@@ -11,12 +10,12 @@ const app = express();
 const port = process.env.PORT || 4001;
 
 var corsOptions = {
-    origin: ['http://localhost:4200', 'http://localhost', 'http://localhost:3001', 'http://localhost:4002','http://localhost:4001']
+    origin: ['http://localhost:4200', 'http://localhost', 'http://localhost:3001', 'http://localhost:4001', 'http://localhost:4002']
 };
 
-app.use(express.static(__dirname + '/dist/ski-patrol/browser'));
-app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
+// Middleware first
 app.use(cors(corsOptions));
+app.use(express.static(__dirname + '/dist/ski-patrol/browser'));
 console.log(__dirname);
 
 let logos = [];
@@ -141,7 +140,7 @@ function refreshData() {
 }
 
 
-// app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
+// API routes
 app.get('/api/weather', (req, res) => {
     res.send({ lastUpdated: lastUpdate, weather: [killington, sugarbush, madriverglen, stratton] });
 });
@@ -149,6 +148,9 @@ app.get('/api/weather', (req, res) => {
 app.get('/api/health', (req, res) => {
     res.send("OK");
 });
+
+// SPA fallback — must be last so API routes are matched first
+app.get('/*', (req, res) => res.sendFile(path.join(__dirname, 'dist/ski-patrol/browser/index.html')));
 
 const server = http.createServer(app);
 
@@ -158,23 +160,23 @@ refreshData();
 
 setInterval(refreshData, 900000);
 
-function updateShared(resort, resortId, handleResult) {
-    
-    https.get(`https://v4.mtnfeed.com/resorts/${resort}.json`, r => processData(r, (requiredInfo) => {
+function updateShared(resortName, resortId, handleResult) {
+
+    https.get(`https://v4.mtnfeed.com/resorts/${resortName}.json`, r => processData(r, (requiredInfo) => {
         https.get(`https://mtnpowder.com/feed/v3.json?bearer_token=${requiredInfo.bearerToken}&resortId%5B%5D=${resortId}`, j => processData(j, (sharedData) => {
-            var resort = JSON.parse(JSON.stringify(emptyShared));
-            resort.currentTemp = sharedData.Resorts[0].CurrentConditions.Base.TemperatureF;
-            resort.high = sharedData.Resorts[0].CurrentConditions.Base.TemperatureHighF;
-            resort.low = sharedData.Resorts[0].CurrentConditions.Base.TemperatureLowF;
-            resort.totalLifts = sharedData.Resorts[0].SnowReport.TotalLifts;
-            resort.openLifts = sharedData.Resorts[0].SnowReport.TotalOpenLifts;
-            resort.totalTrails = sharedData.Resorts[0].SnowReport.TotalTrails;
-            resort.openTrails = sharedData.Resorts[0].SnowReport.TotalOpenTrails;
-            resort.nextTwentyFour = sharedData.Resorts[0].SnowReport.BaseArea.Last24HoursIn;
-            resort.windspeed = parseInt(sharedData.Resorts[0].Forecasts[0].OneDay.avewind.mph);
-            handleResult(resort);
-        }));
-    }));
+            var resortData = JSON.parse(JSON.stringify(emptyShared));
+            resortData.currentTemp = sharedData.Resorts[0].CurrentConditions.Base.TemperatureF;
+            resortData.high = sharedData.Resorts[0].CurrentConditions.Base.TemperatureHighF;
+            resortData.low = sharedData.Resorts[0].CurrentConditions.Base.TemperatureLowF;
+            resortData.totalLifts = sharedData.Resorts[0].SnowReport.TotalLifts;
+            resortData.openLifts = sharedData.Resorts[0].SnowReport.TotalOpenLifts;
+            resortData.totalTrails = sharedData.Resorts[0].SnowReport.TotalTrails;
+            resortData.openTrails = sharedData.Resorts[0].SnowReport.TotalOpenTrails;
+            resortData.nextTwentyFour = sharedData.Resorts[0].SnowReport.BaseArea.Last24HoursIn;
+            resortData.windspeed = parseInt(sharedData.Resorts[0].Forecasts[0].OneDay.avewind.mph);
+            handleResult(resortData);
+        })).on('error', err => console.error(`mtnpowder request failed for ${resortName}:`, err));
+    })).on('error', err => console.error(`mtnfeed request failed for ${resortName}:`, err));
 
 }
 
@@ -186,8 +188,7 @@ function updateMadRiverGlen() {
         madriverglen.high = Math.round(lastData.hl.tempf.h);
         madriverglen.low = Math.round(lastData.hl.tempf.l);
         madriverglen.feelsLike = Math.round(lastData.hl.feelsLike.c / 100.0);
-
-    }));
+    })).on('error', err => console.error('Ambient Weather request failed:', err));
 
     https.get("https://www.madriverglen.com/conditions/", r => processData(r, data => {
         const $ = cheerio.load(data);
@@ -206,13 +207,13 @@ function updateMadRiverGlen() {
                 else {
                     madriverglen.nextTwentyFour = parseInt(range[0]);
                 }
-                
+
             }
 
             madriverglen.totalLifts = 5;
             madriverglen.totalTrails = 60;
         });
-    }, true));
+    }, true)).on('error', err => console.error('Mad River Glen conditions request failed:', err));
 }
 
 function updateKillington() {
@@ -220,18 +221,17 @@ function updateKillington() {
     https.get("https://api.killington.com/api/v1/dor/drupal/lifts", r => processData(r, lifts => {
        killington.totalLifts = lifts.length;
        killington.openLifts = lifts.filter(l => l.status !== "closed").length;
-    }));
+    })).on('error', err => console.error('Killington lifts request failed:', err));
 
     https.get("https://api.killington.com/api/v1/dor/drupal/trails", r => processData(r, trails => {
         const ftrails = trails.filter(t => t.type === "alpine_trail");
         killington.totalTrails = ftrails.length;
         killington.openTrails = ftrails.filter(t => t.status !== "closed" && t.status !== "on_hold").length;
-     }));
- 
+    })).on('error', err => console.error('Killington trails request failed:', err));
 
     https.get("https://api.killington.com/api/v1/dor/drupal/snow-reports?sort=date&direction=desc&limit=1", r => processData(r, conditions => {
         killington.nextTwentyFour = conditions[0].computed["24_hour"];
-    }));
+    })).on('error', err => console.error('Killington snow report request failed:', err));
 
     https.get("https://api.killington.com/api/v1/dor/weather-forecast", r => processData(r, (weather) => {
         killington.low = Math.round(weather.forecast[0].temperature_low);
@@ -239,5 +239,5 @@ function updateKillington() {
         killington.windspeed = Math.round(weather.forecast[0].wind_speed.split("-")[0]);
         killington.currentTemp = Math.round(weather.current.temperature);
         killington.feelsLike = Math.round(weather.current.temperature);
-    }));
+    })).on('error', err => console.error('Killington weather request failed:', err));
 }

@@ -1,13 +1,18 @@
-<div style="height: 100%">
-    <div style="display: flex; flex-wrap: wrap; justify-content: space-around; width:97%; padding-left: 15px; height:95%">
-        @for (resort of resorts; track trackItem) {
-            <div
-            style="padding-left:0px; padding-right: 0px; width: 280px; padding-top: 1%">
-            <app-resort-view [data]="resort"></app-resort-view>
-            </div>
-        }
+@if (loading) {
+  <div class="loading-message">Loading resort data...</div>
+} @else if (error) {
+  <div class="error-message">Unable to load resort data. Retrying...</div>
+} @else {
+  <div class="home-container">
+    <div class="resort-grid">
+      @for (resort of resorts; track resort.name) {
+        <div class="resort-card-wrapper">
+          <app-resort-view [data]="resort"></app-resort-view>
+        </div>
+      }
     </div>
-    <div style="justify-content: left;padding-left: 15px; padding-top: 15px; color: white;">
-        Last Updated: {{lastUpdated.toLocaleString()}}
+    <div class="last-updated">
+      Last Updated: {{lastUpdated.toLocaleString()}}
     </div>
-    </div>
+  </div>
+}

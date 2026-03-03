@@ -1,10 +1,10 @@
-<mat-card style="width: 100%; height: 316px;">
-    <div style="display: flex; justify-content: center; align-items: center; align-content: center; width: 100%; min-height: 75px; flex-direction: row;">
-        <img style="width:75px; max-width: 75px;"  src="{{data.logo}}">
+<mat-card class="resort-card">
+    <div class="logo-container">
+        <img class="resort-logo" [src]="data.logo" alt="{{data.name}} logo">
     </div>
     <mat-card-header>
     </mat-card-header>
-    <mat-card-content style="font-size: 1.2em; line-height: 1.5em;">
+    <mat-card-content class="resort-content">
         <div>Temperature: H{{data.high}}&deg;F / L{{data.low}}&deg;F</div>
         <div>Current: {{data.currentTemp}}&deg;F</div>
         <div>@if (data.flags.showFeelsLike) {Feels Like: {{data.feelsLike}}&deg;F}</div>

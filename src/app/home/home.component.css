@@ -1,0 +1,29 @@
+.home-container {
+  height: 100%;
+}
+
+.resort-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  width: 97%;
+  padding-left: 15px;
+  height: 95%;
+}
+
+.resort-card-wrapper {
+  width: 280px;
+  padding-top: 1%;
+}
+
+.last-updated {
+  padding-left: 15px;
+  padding-top: 15px;
+  color: white;
+}
+
+.loading-message,
+.error-message {
+  color: white;
+  padding: 20px;
+}
