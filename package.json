@@ -9,6 +9,11 @@
     "test": "ng test"
   },
   "private": true,
+  "overrides": {
+    "shell-quote": "^1.10.0",
+    "websocket-driver": "^0.7.5",
+    "tar": "^7.5.22"
+  },
   "dependencies": {
     "@angular/animations": "^19.0.0",
     "@angular/cdk": "^19.0.2",
